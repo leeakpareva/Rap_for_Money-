@@ -6,6 +6,7 @@ import { User, Post } from '../types'
 import UserAvatar from '../components/UserAvatar'
 import FollowButton from '../components/FollowButton'
 import PostCard from '../components/PostCard'
+import ProfileEditModal from '../components/ProfileEditModal'
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>()
@@ -15,6 +16,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isFollowing, setIsFollowing] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
 
   const fetchProfile = async () => {
     if (!username) return
@@ -57,6 +59,12 @@ const Profile = () => {
 
   const handlePostUpdate = (updatedPost: Post) => {
     setPosts(prev => prev.map(p => p._id === updatedPost._id ? updatedPost : p))
+  }
+
+  const handleProfileUpdate = (updatedData: Partial<User>) => {
+    if (profileUser) {
+      setProfileUser({ ...profileUser, ...updatedData })
+    }
   }
 
   if (!currentUser) {
@@ -108,7 +116,36 @@ const Profile = () => {
             <p className="text-gray-400 mb-2">@{profileUser.username}</p>
 
             {profileUser.bio && (
-              <p className="text-gray-300 mb-3">{profileUser.bio}</p>
+              <p className="text-gray-300 mb-3 whitespace-pre-wrap">{profileUser.bio}</p>
+            )}
+
+            {profileUser.socialLinks && (profileUser.socialLinks.link1 || profileUser.socialLinks.link2) && (
+              <div className="flex items-center space-x-3 mb-3">
+                {profileUser.socialLinks.link1 && (
+                  <a
+                    href={profileUser.socialLinks.link1}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple hover:text-purple-light transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                    </svg>
+                  </a>
+                )}
+                {profileUser.socialLinks.link2 && (
+                  <a
+                    href={profileUser.socialLinks.link2}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple hover:text-purple-light transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+                    </svg>
+                  </a>
+                )}
+              </div>
             )}
 
             <div className="flex items-center space-x-6 text-sm text-gray-400 mb-4">
@@ -159,7 +196,14 @@ const Profile = () => {
               </div>
             </div>
 
-            {!isOwnProfile && (
+            {isOwnProfile ? (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="px-4 py-2 bg-dark-border text-white rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Edit Profile
+              </button>
+            ) : (
               <FollowButton
                 userId={profileUser.id}
                 isFollowing={isFollowing}
@@ -195,6 +239,14 @@ const Profile = () => {
           </div>
         )}
       </div>
+
+      {showEditModal && profileUser && (
+        <ProfileEditModal
+          user={profileUser}
+          onClose={() => setShowEditModal(false)}
+          onUpdate={handleProfileUpdate}
+        />
+      )}
     </div>
   )
 }

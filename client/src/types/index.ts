@@ -9,6 +9,10 @@ export interface User {
   profileImageUrl?: string
   bannerImageUrl?: string
   genres?: string[]
+  socialLinks?: {
+    link1?: string
+    link2?: string
+  }
   roles: string[]
   followersCount?: number
   followingCount?: number

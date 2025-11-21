@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vercel env rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

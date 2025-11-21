@@ -11,6 +11,10 @@ export interface IUser extends Document {
   profileImageUrl?: string;
   bannerImageUrl?: string;
   genres?: string[];
+  socialLinks?: {
+    link1?: string;
+    link2?: string;
+  };
   followers: mongoose.Types.ObjectId[];
   following: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -54,6 +58,16 @@ const userSchema = new Schema<IUser>({
   profileImageUrl: String,
   bannerImageUrl: String,
   genres: [String],
+  socialLinks: {
+    link1: {
+      type: String,
+      maxlength: 200
+    },
+    link2: {
+      type: String,
+      maxlength: 200
+    }
+  },
   followers: [{
     type: Schema.Types.ObjectId,
     ref: 'User'

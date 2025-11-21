@@ -27,6 +27,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
         profileImageUrl: user.profileImageUrl,
         bannerImageUrl: user.bannerImageUrl,
         genres: user.genres,
+        socialLinks: user.socialLinks,
         roles: user.roles,
         followersCount: user.followers.length,
         followingCount: user.following.length,
@@ -128,6 +129,84 @@ export const searchUsers = async (req: Request, res: Response): Promise<void> =>
     res.json({ users });
   } catch (error) {
     console.error('Search users error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+    const { displayName, bio, location, link1, link2 } = req.body;
+
+    const updateData: any = {};
+
+    if (displayName !== undefined) updateData.displayName = displayName;
+    if (bio !== undefined) updateData.bio = bio;
+    if (location !== undefined) updateData.location = location;
+
+    if (link1 !== undefined || link2 !== undefined) {
+      updateData.socialLinks = {};
+      if (link1 !== undefined) updateData.socialLinks.link1 = link1;
+      if (link2 !== undefined) updateData.socialLinks.link2 = link2;
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true }
+    ).select('-passwordHash');
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        bio: user.bio,
+        location: user.location,
+        profileImageUrl: user.profileImageUrl,
+        socialLinks: user.socialLinks
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const updateProfilePicture = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.userId;
+
+    if (!req.file) {
+      res.status(400).json({ error: 'No image file provided' });
+      return;
+    }
+
+    const profileImageUrl = `/uploads/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profileImageUrl },
+      { new: true }
+    ).select('-passwordHash');
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json({
+      message: 'Profile picture updated successfully',
+      profileImageUrl
+    });
+  } catch (error) {
+    console.error('Update profile picture error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 };
