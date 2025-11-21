@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createPost, getFeed, getPost, likePost, unlikePost, deletePost, getTrendingPosts, searchPostsByHashtag, getTrendingHashtags } from '../controllers/postController';
 import { authenticate } from '../middleware/auth';
-import { upload } from '../middleware/upload';
+import upload from '../middleware/upload';
 
 const router = Router();
 
