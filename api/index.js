@@ -52,7 +52,27 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 
-// Routes
+// Routes - Handle both /api and bare paths due to Vercel routing
+app.get('/health', async (req, res) => {
+  try {
+    await connectToDatabase();
+    res.json({
+      status: 'OK',
+      message: 'API is running',
+      mongoConnected: mongoose.connection.readyState === 1,
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: 'Database connection failed',
+      error: error.message,
+      mongoConnected: false
+    });
+  }
+});
+
 app.get('/api/health', async (req, res) => {
   try {
     await connectToDatabase();
@@ -73,15 +93,41 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Rap for Money API',
+    version: '1.0.0',
+    endpoints: ['/api/health', '/health', '/test-db']
+  });
+});
+
 app.get('/api', (req, res) => {
   res.json({
     message: 'Rap for Money API',
     version: '1.0.0',
-    endpoints: ['/api/health']
+    endpoints: ['/api/health', '/health', '/test-db']
   });
 });
 
 // Test endpoint to verify database connection
+app.get('/test-db', async (req, res) => {
+  try {
+    await connectToDatabase();
+    const userCount = await User.countDocuments();
+    res.json({
+      status: 'Database connected',
+      userCount,
+      mongoConnected: mongoose.connection.readyState === 1
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'Database error',
+      error: error.message,
+      mongoConnected: false
+    });
+  }
+});
+
 app.get('/api/test-db', async (req, res) => {
   try {
     await connectToDatabase();
