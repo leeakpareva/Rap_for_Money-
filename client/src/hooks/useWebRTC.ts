@@ -8,7 +8,7 @@ interface UseWebRTCProps {
   onStreamEnd?: () => void
 }
 
-export const useWebRTC = ({ roomId, isHost, onStreamEnd }: UseWebRTCProps) => {
+export const useWebRTC = ({ roomId, isHost }: UseWebRTCProps) => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
   const [isConnected, setIsConnected] = useState(false)

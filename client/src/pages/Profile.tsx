@@ -15,7 +15,6 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isFollowing, setIsFollowing] = useState(false)
-  const [postsLoading, setPostsLoading] = useState(false)
 
   const fetchProfile = async () => {
     if (!username) return

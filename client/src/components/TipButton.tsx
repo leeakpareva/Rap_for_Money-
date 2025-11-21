@@ -21,7 +21,7 @@ const TipButton = ({ targetUserId, targetUsername, postId, onTipSent }: TipButto
   const handleSendTip = async () => {
     setIsSending(true)
     try {
-      const response = await api.post('/tips', {
+      await api.post('/tips', {
         toUserId: targetUserId,
         amount,
         message: message.trim(),
