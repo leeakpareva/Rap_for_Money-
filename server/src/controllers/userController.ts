@@ -145,9 +145,12 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
     if (location !== undefined) updateData.location = location;
 
     if (link1 !== undefined || link2 !== undefined) {
-      updateData.socialLinks = {};
-      if (link1 !== undefined) updateData.socialLinks.link1 = link1;
-      if (link2 !== undefined) updateData.socialLinks.link2 = link2;
+      // Get current user to preserve existing social links
+      const currentUser = await User.findById(userId);
+      updateData.socialLinks = {
+        link1: link1 !== undefined ? link1 : currentUser?.socialLinks?.link1 || '',
+        link2: link2 !== undefined ? link2 : currentUser?.socialLinks?.link2 || ''
+      };
     }
 
     const user = await User.findByIdAndUpdate(

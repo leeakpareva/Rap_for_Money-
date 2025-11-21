@@ -36,31 +36,45 @@ const ProfileEditModal = ({ user, onClose, onUpdate }: ProfileEditModalProps) =>
     setIsLoading(true)
 
     try {
+      let updatedProfileImageUrl = user.profileImageUrl
+
       // Update profile picture if changed
       if (profileImage) {
         const formData = new FormData()
         formData.append('profilePicture', profileImage)
 
+        console.log('Uploading profile picture...')
         const pictureResponse = await api.put('/users/profile/picture', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
 
-        onUpdate({ profileImageUrl: pictureResponse.data.profileImageUrl })
+        updatedProfileImageUrl = pictureResponse.data.profileImageUrl
+        console.log('Profile picture uploaded:', updatedProfileImageUrl)
       }
 
       // Update other profile fields
       const profileData = {
-        displayName,
-        bio,
-        location,
-        link1,
-        link2
+        displayName: displayName.trim(),
+        bio: bio.trim(),
+        location: location.trim(),
+        link1: link1.trim(),
+        link2: link2.trim()
       }
 
+      console.log('Updating profile data:', profileData)
       const response = await api.put('/users/profile', profileData)
-      onUpdate(response.data.user)
+
+      // Merge all updates
+      const updatedUser = {
+        ...response.data.user,
+        profileImageUrl: updatedProfileImageUrl
+      }
+
+      console.log('Profile updated successfully:', updatedUser)
+      onUpdate(updatedUser)
       onClose()
     } catch (error: any) {
+      console.error('Profile update error:', error)
       alert(error.response?.data?.error || 'Failed to update profile')
     } finally {
       setIsLoading(false)

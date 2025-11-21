@@ -13,21 +13,24 @@ const UserAvatar = ({ user, size = 'md', className = '' }: UserAvatarProps) => {
     lg: 'w-16 h-16 text-xl'
   }
 
-  const displayText = user.displayName[0].toUpperCase()
+  const displayText = user.displayName ? user.displayName[0].toUpperCase() : 'U'
 
   return (
     <div
-      className={`${sizeClasses[size]} ${className} rounded-full bg-purple flex items-center justify-center text-white font-semibold`}
+      className={`${sizeClasses[size]} ${className} rounded-full bg-purple flex items-center justify-center text-white font-semibold overflow-hidden flex-shrink-0`}
     >
       {user.profileImageUrl ? (
         <img
           src={user.profileImageUrl}
-          alt={user.displayName}
+          alt={user.displayName || 'Profile'}
           className="w-full h-full rounded-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+            e.currentTarget.parentElement?.querySelector('span')?.style.setProperty('display', 'block')
+          }}
         />
-      ) : (
-        <span>{displayText}</span>
-      )}
+      ) : null}
+      <span className={user.profileImageUrl ? 'hidden' : 'block'}>{displayText}</span>
     </div>
   )
 }
