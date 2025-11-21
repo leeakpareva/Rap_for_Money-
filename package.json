@@ -1,0 +1,14 @@
+{
+  "name": "rap-for-money",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "start": "npm run dev",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "concurrently": "^8.2.2"
+  }
+}
