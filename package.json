@@ -4,8 +4,10 @@
   "scripts": {
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
     "start": "npm run dev",
+    "build": "cd client && npm run build",
     "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "vercel-build": "cd client && npm run build"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

@@ -25,8 +25,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (token && user) {
-      const newSocket = io('http://localhost:5000', {
-        auth: { token }
+      const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin
+      const newSocket = io(SOCKET_URL, {
+        auth: { token },
+        transports: ['polling'] // Use polling for Vercel compatibility
       })
 
       newSocket.on('connect', () => {
