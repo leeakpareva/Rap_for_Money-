@@ -5,15 +5,32 @@ const path = require('path');
 
 const app = express();
 
-// Database connection
-const MONGODB_URI = process.env.MONGODB_URI;
-if (MONGODB_URI) {
-  mongoose.connect(MONGODB_URI).then(() => {
+// Database connection function
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return;
+  }
+
+  try {
+    const MONGODB_URI = process.env.MONGODB_URI;
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    isConnected = true;
     console.log('Connected to MongoDB');
-  }).catch(err => {
-    console.error('MongoDB connection error:', err);
-  });
-}
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    throw error;
+  }
+};
 
 // Middleware
 app.use(cors({
@@ -25,8 +42,23 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API is running', mongoConnected: mongoose.connection.readyState === 1 });
+app.get('/api/health', async (req, res) => {
+  try {
+    await connectToDatabase();
+    res.json({
+      status: 'OK',
+      message: 'API is running',
+      mongoConnected: mongoose.connection.readyState === 1,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: 'Database connection failed',
+      error: error.message,
+      mongoConnected: false
+    });
+  }
 });
 
 // Simple response for now to test
