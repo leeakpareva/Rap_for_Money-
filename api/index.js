@@ -1,11 +1,27 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
 
 const app = express();
 
-// Database connection function
+// Simple User schema for testing
+const userSchema = new mongoose.Schema({
+  username: String,
+  displayName: String,
+  email: String,
+  passwordHash: String,
+  bio: String,
+  location: String,
+  profileImageUrl: String,
+  socialLinks: {
+    link1: String,
+    link2: String
+  }
+}, { timestamps: true });
+
+const User = mongoose.model('User', userSchema);
+
+// Database connection
 let isConnected = false;
 
 const connectToDatabase = async () => {
@@ -19,11 +35,7 @@ const connectToDatabase = async () => {
       throw new Error('MONGODB_URI environment variable is not set');
     }
 
-    await mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
+    await mongoose.connect(MONGODB_URI);
     isConnected = true;
     console.log('Connected to MongoDB');
   } catch (error) {
@@ -39,9 +51,8 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check
+// Routes
 app.get('/api/health', async (req, res) => {
   try {
     await connectToDatabase();
@@ -49,7 +60,8 @@ app.get('/api/health', async (req, res) => {
       status: 'OK',
       message: 'API is running',
       mongoConnected: mongoose.connection.readyState === 1,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
     res.status(500).json({
@@ -61,14 +73,40 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Simple response for now to test
 app.get('/api', (req, res) => {
-  res.json({ message: 'Rap for Money API is running!' });
+  res.json({
+    message: 'Rap for Money API',
+    version: '1.0.0',
+    endpoints: ['/api/health']
+  });
 });
 
-// Handle all API routes
+// Test endpoint to verify database connection
+app.get('/api/test-db', async (req, res) => {
+  try {
+    await connectToDatabase();
+    const userCount = await User.countDocuments();
+    res.json({
+      status: 'Database connected',
+      userCount,
+      mongoConnected: mongoose.connection.readyState === 1
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'Database error',
+      error: error.message,
+      mongoConnected: false
+    });
+  }
+});
+
+// Catch all for API routes
 app.use('/api/*', (req, res) => {
-  res.status(404).json({ error: 'API endpoint not found', path: req.path });
+  res.status(404).json({
+    error: 'API endpoint not found',
+    path: req.path,
+    availableEndpoints: ['/api', '/api/health', '/api/test-db']
+  });
 });
 
 module.exports = app;
